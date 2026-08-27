@@ -12,6 +12,7 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as TeachRouteImport } from './routes/teach'
+import { Route as ClassesClassIdRouteImport } from './routes/classes.$classId'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -28,35 +29,44 @@ const TeachRoute = TeachRouteImport.update({
   path: '/teach',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ClassesClassIdRoute = ClassesClassIdRouteImport.update({
+  id: '/classes/$classId',
+  path: '/classes/$classId',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
   '/teach': typeof TeachRoute
+  '/classes/$classId': typeof ClassesClassIdRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
   '/teach': typeof TeachRoute
+  '/classes/$classId': typeof ClassesClassIdRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
   '/teach': typeof TeachRoute
+  '/classes/$classId': typeof ClassesClassIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/auth' | '/teach'
+  fullPaths: '/' | '/auth' | '/teach' | '/classes/$classId'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/auth' | '/teach'
-  id: '__root__' | '/' | '/auth' | '/teach'
+  to: '/' | '/auth' | '/teach' | '/classes/$classId'
+  id: '__root__' | '/' | '/auth' | '/teach' | '/classes/$classId'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AuthRoute: typeof AuthRoute
   TeachRoute: typeof TeachRoute
+  ClassesClassIdRoute: typeof ClassesClassIdRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -82,6 +92,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof TeachRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/classes/$classId': {
+      id: '/classes/$classId'
+      path: '/classes/$classId'
+      fullPath: '/classes/$classId'
+      preLoaderRoute: typeof ClassesClassIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -89,6 +106,7 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AuthRoute: AuthRoute,
   TeachRoute: TeachRoute,
+  ClassesClassIdRoute: ClassesClassIdRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
