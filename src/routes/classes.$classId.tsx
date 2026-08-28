@@ -31,10 +31,10 @@ function ClassDetailPage() {
   return (
     <AppShell>
       <AuthGate>
-          <MemberGate>
-            <ClassDetail />
-          </MemberGate>
-        </AuthGate>
+        <MemberGate>
+          <ClassDetail />
+        </MemberGate>
+      </AuthGate>
     </AppShell>
   );
 }

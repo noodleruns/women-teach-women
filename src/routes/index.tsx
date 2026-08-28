@@ -32,10 +32,10 @@ function Index() {
   return (
     <AppShell>
       <AuthGate>
-          <MemberGate>
-            <ClassFeed />
-          </MemberGate>
-        </AuthGate>
+        <MemberGate>
+          <ClassFeed />
+        </MemberGate>
+      </AuthGate>
     </AppShell>
   );
 }

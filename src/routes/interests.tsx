@@ -36,10 +36,10 @@ function InterestsPage() {
   return (
     <AppShell>
       <AuthGate>
-          <MemberGate>
-            <Interests />
-          </MemberGate>
-        </AuthGate>
+        <MemberGate>
+          <Interests />
+        </MemberGate>
+      </AuthGate>
     </AppShell>
   );
 }

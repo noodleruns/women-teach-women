@@ -38,7 +38,10 @@ const schema = z.object({
   title: z.string().trim().min(4, "Give your class a title").max(120),
   skill_name: z.string().trim().min(2, "What skill is this?").max(80),
   description: z.string().trim().max(1500),
-  zip_code: z.string().trim().regex(/^\d{5}$/, "Enter a 5-digit zip code"),
+  zip_code: z
+    .string()
+    .trim()
+    .regex(/^\d{5}$/, "Enter a 5-digit zip code"),
   capacity: z.coerce.number().int().min(1).max(200),
   starts_at: z.string().optional(),
   price: z.coerce.number().min(0).max(2000),
@@ -48,10 +51,10 @@ function TeachPage() {
   return (
     <AppShell>
       <AuthGate>
-          <MemberGate>
-            <TeachForm />
-          </MemberGate>
-        </AuthGate>
+        <MemberGate>
+          <TeachForm />
+        </MemberGate>
+      </AuthGate>
     </AppShell>
   );
 }
