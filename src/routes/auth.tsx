@@ -8,6 +8,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import heroImage from "@/assets/hero-women.jpg";
 
 export const Route = createFileRoute("/auth")({
   head: () => ({
@@ -91,7 +92,15 @@ function AuthPage() {
 
   return (
     <div className="mx-auto flex min-h-screen w-full max-w-lg flex-col justify-center px-6 py-12">
-      <p className="text-xs font-semibold uppercase tracking-[0.18em] text-primary">Kindred</p>
+      <img
+        src={heroImage}
+        alt="A group of happy women crafting together with drinks at a workshop"
+        width={1536}
+        height={1024}
+        className="w-full rounded-3xl object-cover shadow-md"
+        style={{ aspectRatio: "2 / 1" }}
+      />
+      <p className="mt-6 text-xs font-semibold uppercase tracking-[0.18em] text-primary">Kindred</p>
       <h1 className="mt-2 text-4xl leading-tight text-foreground">
         {mode === "signin" ? "Welcome back" : "Create your account"}
       </h1>
