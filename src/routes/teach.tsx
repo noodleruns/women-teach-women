@@ -5,6 +5,7 @@ import { z } from "zod";
 import { toast } from "sonner";
 import { AppShell, PageHeader } from "@/components/AppShell";
 import { AuthGate } from "@/components/AuthGate";
+import { MemberGate } from "@/components/MemberGate";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { fetchMyProfile, fetchSkills } from "@/lib/community";
@@ -47,8 +48,10 @@ function TeachPage() {
   return (
     <AppShell>
       <AuthGate>
-        <TeachForm />
-      </AuthGate>
+          <MemberGate>
+            <TeachForm />
+          </MemberGate>
+        </AuthGate>
     </AppShell>
   );
 }

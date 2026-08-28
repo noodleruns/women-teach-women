@@ -12,6 +12,7 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as InterestsRouteImport } from './routes/interests'
+import { Route as InvitesRouteImport } from './routes/invites'
 import { Route as NotificationsRouteImport } from './routes/notifications'
 import { Route as ProfileRouteImport } from './routes/profile'
 import { Route as TeachRouteImport } from './routes/teach'
@@ -30,6 +31,11 @@ const AuthRoute = AuthRouteImport.update({
 const InterestsRoute = InterestsRouteImport.update({
   id: '/interests',
   path: '/interests',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const InvitesRoute = InvitesRouteImport.update({
+  id: '/invites',
+  path: '/invites',
   getParentRoute: () => rootRouteImport,
 } as any)
 const NotificationsRoute = NotificationsRouteImport.update({
@@ -57,6 +63,7 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
   '/interests': typeof InterestsRoute
+  '/invites': typeof InvitesRoute
   '/notifications': typeof NotificationsRoute
   '/profile': typeof ProfileRoute
   '/teach': typeof TeachRoute
@@ -66,6 +73,7 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
   '/interests': typeof InterestsRoute
+  '/invites': typeof InvitesRoute
   '/notifications': typeof NotificationsRoute
   '/profile': typeof ProfileRoute
   '/teach': typeof TeachRoute
@@ -76,6 +84,7 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
   '/interests': typeof InterestsRoute
+  '/invites': typeof InvitesRoute
   '/notifications': typeof NotificationsRoute
   '/profile': typeof ProfileRoute
   '/teach': typeof TeachRoute
@@ -87,6 +96,7 @@ export interface FileRouteTypes {
     | '/'
     | '/auth'
     | '/interests'
+    | '/invites'
     | '/notifications'
     | '/profile'
     | '/teach'
@@ -96,6 +106,7 @@ export interface FileRouteTypes {
     | '/'
     | '/auth'
     | '/interests'
+    | '/invites'
     | '/notifications'
     | '/profile'
     | '/teach'
@@ -105,6 +116,7 @@ export interface FileRouteTypes {
     | '/'
     | '/auth'
     | '/interests'
+    | '/invites'
     | '/notifications'
     | '/profile'
     | '/teach'
@@ -115,6 +127,7 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AuthRoute: typeof AuthRoute
   InterestsRoute: typeof InterestsRoute
+  InvitesRoute: typeof InvitesRoute
   NotificationsRoute: typeof NotificationsRoute
   ProfileRoute: typeof ProfileRoute
   TeachRoute: typeof TeachRoute
@@ -142,6 +155,13 @@ declare module '@tanstack/react-router' {
       path: '/interests'
       fullPath: '/interests'
       preLoaderRoute: typeof InterestsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/invites': {
+      id: '/invites'
+      path: '/invites'
+      fullPath: '/invites'
+      preLoaderRoute: typeof InvitesRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/notifications': {
@@ -179,6 +199,7 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AuthRoute: AuthRoute,
   InterestsRoute: InterestsRoute,
+  InvitesRoute: InvitesRoute,
   NotificationsRoute: NotificationsRoute,
   ProfileRoute: ProfileRoute,
   TeachRoute: TeachRoute,

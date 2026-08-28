@@ -4,6 +4,7 @@ import { useState } from "react";
 import { MapPin, Users, Clock, Search } from "lucide-react";
 import { AppShell, PageHeader } from "@/components/AppShell";
 import { AuthGate } from "@/components/AuthGate";
+import { MemberGate } from "@/components/MemberGate";
 import { fetchUpcomingClasses, formatPrice, formatWhen } from "@/lib/community";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
@@ -31,8 +32,10 @@ function Index() {
   return (
     <AppShell>
       <AuthGate>
-        <ClassFeed />
-      </AuthGate>
+          <MemberGate>
+            <ClassFeed />
+          </MemberGate>
+        </AuthGate>
     </AppShell>
   );
 }
