@@ -5,6 +5,7 @@ import { Check, Plus } from "lucide-react";
 import { toast } from "sonner";
 import { AppShell, PageHeader } from "@/components/AppShell";
 import { AuthGate } from "@/components/AuthGate";
+import { MemberGate } from "@/components/MemberGate";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { fetchSkills } from "@/lib/community";
@@ -35,7 +36,9 @@ function InterestsPage() {
   return (
     <AppShell>
       <AuthGate>
-        <Interests />
+        <MemberGate>
+          <Interests />
+        </MemberGate>
       </AuthGate>
     </AppShell>
   );

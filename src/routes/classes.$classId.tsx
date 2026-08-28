@@ -4,6 +4,7 @@ import { ArrowLeft, Clock, MapPin, Users } from "lucide-react";
 import { toast } from "sonner";
 import { AppShell } from "@/components/AppShell";
 import { AuthGate } from "@/components/AuthGate";
+import { MemberGate } from "@/components/MemberGate";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { fetchClass, formatPrice, formatWhen } from "@/lib/community";
@@ -30,7 +31,9 @@ function ClassDetailPage() {
   return (
     <AppShell>
       <AuthGate>
-        <ClassDetail />
+        <MemberGate>
+          <ClassDetail />
+        </MemberGate>
       </AuthGate>
     </AppShell>
   );

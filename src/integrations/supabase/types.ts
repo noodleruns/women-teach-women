@@ -89,6 +89,36 @@ export type Database = {
         }
         Relationships: []
       }
+      invites: {
+        Row: {
+          claimed_at: string | null
+          claimed_by: string | null
+          code: string
+          created_at: string
+          id: string
+          inviter_id: string
+          note: string
+        }
+        Insert: {
+          claimed_at?: string | null
+          claimed_by?: string | null
+          code: string
+          created_at?: string
+          id?: string
+          inviter_id: string
+          note?: string
+        }
+        Update: {
+          claimed_at?: string | null
+          claimed_by?: string | null
+          code?: string
+          created_at?: string
+          id?: string
+          inviter_id?: string
+          note?: string
+        }
+        Relationships: []
+      }
       notifications: {
         Row: {
           body: string
@@ -134,6 +164,9 @@ export type Database = {
           created_at: string
           display_name: string
           id: string
+          invited_by: string | null
+          joined_at: string | null
+          membership_status: string
           teaches: string[]
           updated_at: string
           zip_code: string
@@ -144,6 +177,9 @@ export type Database = {
           created_at?: string
           display_name?: string
           id: string
+          invited_by?: string | null
+          joined_at?: string | null
+          membership_status?: string
           teaches?: string[]
           updated_at?: string
           zip_code?: string
@@ -154,6 +190,9 @@ export type Database = {
           created_at?: string
           display_name?: string
           id?: string
+          invited_by?: string | null
+          joined_at?: string | null
+          membership_status?: string
           teaches?: string[]
           updated_at?: string
           zip_code?: string
@@ -207,12 +246,34 @@ export type Database = {
         }
         Relationships: []
       }
+      vouches: {
+        Row: {
+          candidate_id: string
+          created_at: string
+          id: string
+          member_id: string
+        }
+        Insert: {
+          candidate_id: string
+          created_at?: string
+          id?: string
+          member_id: string
+        }
+        Update: {
+          candidate_id?: string
+          created_at?: string
+          id?: string
+          member_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      claim_invite: { Args: { _code: string }; Returns: string }
+      is_member: { Args: { _user_id: string }; Returns: boolean }
     }
     Enums: {
       [_ in never]: never

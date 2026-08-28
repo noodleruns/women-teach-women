@@ -191,7 +191,10 @@ function Profile() {
         empty="You haven't signed up for a class yet."
       />
 
-      <div className="px-5 pt-8">
+      <div className="space-y-3 px-5 pt-8">
+        <Button asChild className="h-11 w-full rounded-full">
+          <Link to="/invites">Invites &amp; vouching</Link>
+        </Button>
         <Button variant="outline" onClick={signOut} className="h-11 w-full rounded-full">
           Sign out
         </Button>
