@@ -98,3 +98,84 @@ export async function fetchMyProfile(userId: string): Promise<ProfileRow | null>
   if (error) throw error;
   return (data as ProfileRow) ?? null;
 }
+
+export type MembershipStatus = "member" | "waitlisted";
+
+export type InviteRow = {
+  id: string;
+  inviter_id: string;
+  code: string;
+  note: string;
+  claimed_by: string | null;
+  claimed_at: string | null;
+  created_at: string;
+};
+
+export async function fetchMembership(
+  userId: string,
+): Promise<{ status: MembershipStatus; invited_by: string | null }> {
+  const { data, error } = await supabase
+    .from("profiles")
+    .select("membership_status, invited_by")
+    .eq("id", userId)
+    .maybeSingle();
+  if (error) throw error;
+  return {
+    status: ((data?.membership_status as MembershipStatus) ?? "waitlisted") as MembershipStatus,
+    invited_by: data?.invited_by ?? null,
+  };
+}
+
+export async function fetchMyInvites(userId: string): Promise<InviteRow[]> {
+  const { data, error } = await supabase
+    .from("invites")
+    .select("*")
+    .eq("inviter_id", userId)
+    .order("created_at", { ascending: false });
+  if (error) throw error;
+  return (data ?? []) as InviteRow[];
+}
+
+function randomCode() {
+  const alphabet = "ABCDEFGHJKMNPQRSTUVWXYZ23456789";
+  let out = "";
+  const bytes = new Uint8Array(6);
+  crypto.getRandomValues(bytes);
+  for (const b of bytes) out += alphabet[b % alphabet.length];
+  return `${out.slice(0, 3)}-${out.slice(3)}`;
+}
+
+export async function createInvite(userId: string, note: string): Promise<InviteRow> {
+  const { data, error } = await supabase
+    .from("invites")
+    .insert({ inviter_id: userId, code: randomCode(), note: note.trim().slice(0, 80) })
+    .select("*")
+    .single();
+  if (error) throw error;
+  return data as InviteRow;
+}
+
+export async function claimInvite(code: string): Promise<string> {
+  const { data, error } = await supabase.rpc("claim_invite", { _code: code });
+  if (error) throw error;
+  return (data as string) ?? "invalid";
+}
+
+/** People still on the waitlist that a member could vouch for. */
+export async function fetchWaitlist(): Promise<ProfileRow[]> {
+  const { data, error } = await supabase
+    .from("profiles")
+    .select("*")
+    .eq("membership_status", "waitlisted")
+    .order("created_at", { ascending: true })
+    .limit(50);
+  if (error) throw error;
+  return (data ?? []) as ProfileRow[];
+}
+
+export async function vouchFor(memberId: string, candidateId: string) {
+  const { error } = await supabase
+    .from("vouches")
+    .insert({ member_id: memberId, candidate_id: candidateId });
+  if (error) throw error;
+}
