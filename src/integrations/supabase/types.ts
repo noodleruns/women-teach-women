@@ -273,6 +273,13 @@ export type Database = {
     }
     Functions: {
       claim_invite: { Args: { _code: string }; Returns: string }
+      class_signup_counts: {
+        Args: { class_ids: string[] }
+        Returns: {
+          class_id: string
+          n: number
+        }[]
+      }
       is_member: { Args: { _user_id: string }; Returns: boolean }
     }
     Enums: {
