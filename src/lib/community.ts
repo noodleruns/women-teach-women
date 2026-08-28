@@ -53,7 +53,7 @@ async function attachMeta(classes: ClassRow[]): Promise<ClassWithMeta[]> {
 
 const [{ data: profiles }, { data: signupCounts }] = await Promise.all([
     supabase.from("profiles").select("*").in("id", teacherIds),
-    supabase.rpc("class_signup_counts", { class_ids: classIds }),
+    (supabase.rpc as any)("class_signup_counts", { class_ids: classIds }),
   ]);
 
   const byId = new Map((profiles ?? []).map((p) => [p.id, p as ProfileRow]));
