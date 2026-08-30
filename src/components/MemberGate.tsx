@@ -41,6 +41,35 @@ export function MemberGate({ children }: { children: ReactNode }) {
     onError: () => toast.error("Could not use that code."),
   });
 
+  // A pending invite from an invite link is applied automatically after sign-in.
+  const autoTried = useRef(false);
+  useEffect(() => {
+    if (autoTried.current || !user || membership?.status !== "waitlisted") return;
+    let pending: string | null = null;
+    try {
+      pending = sessionStorage.getItem(PENDING_INVITE_KEY);
+    } catch {
+      /* ignore */
+    }
+    if (!pending) return;
+    autoTried.current = true;
+    claimInvite(pending)
+      .then((result) => {
+        try {
+          sessionStorage.removeItem(PENDING_INVITE_KEY);
+        } catch {
+          /* ignore */
+        }
+        if (result === "ok") {
+          toast.success("You're in — welcome to Kindred.");
+          queryClient.invalidateQueries();
+        }
+      })
+      .catch(() => {});
+  }, [user, membership?.status, queryClient]);
+
+
+
   if (isLoading || !membership) {
     return <p className="px-5 pt-10 text-sm text-muted-foreground">Loading…</p>;
   }
