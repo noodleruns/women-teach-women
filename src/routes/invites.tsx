@@ -82,14 +82,37 @@ function Invites() {
     onError: () => toast.error("Could not vouch right now."),
   });
 
+  function inviteLink(code: string) {
+    const origin = typeof window === "undefined" ? "" : window.location.origin;
+    return `${origin}/join/${code}`;
+  }
+
   async function copy(code: string) {
+    const link = inviteLink(code);
     try {
-      await navigator.clipboard.writeText(code);
+      await navigator.clipboard.writeText(link);
       setCopied(code);
       setTimeout(() => setCopied(null), 1500);
     } catch {
-      toast.error("Copy failed — write it down instead.");
+      toast.error(`Copy failed — share this link instead: ${link}`);
     }
+  }
+
+  async function share(code: string) {
+    const link = inviteLink(code);
+    if (typeof navigator !== "undefined" && "share" in navigator) {
+      try {
+        await navigator.share({
+          title: "You're invited to Kindred",
+          text: "Join me on Kindred — a circle of women sharing skills.",
+          url: link,
+        });
+        return;
+      } catch {
+        /* fall through to copy */
+      }
+    }
+    void copy(code);
   }
 
   const open = invites.filter((i) => !i.claimed_by);
@@ -100,8 +123,9 @@ function Invites() {
       <PageHeader
         eyebrow="Friend of a friend"
         title="Invites"
-        subtitle="Kindred only grows through people we know. Share a code with a woman you'd happily sit next to."
+        subtitle="Kindred only grows through people we know. Send a link to a woman you'd happily sit next to."
       />
+
 
       <form
         className="space-y-3 px-5"
