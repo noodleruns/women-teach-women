@@ -1,12 +1,17 @@
 import { supabase } from "@/integrations/supabase/client";
 
+export type ClassFormat = "in_person" | "online";
+export type ClassStatus = "published" | "gauging_interest" | "cancelled";
+
 export type ClassRow = {
   id: string;
   teacher_id: string;
   title: string;
   description: string;
   skill_name: string;
-  zip_code: string;
+  zip_code: string | null;
+  format: ClassFormat;
+  meeting_url: string;
   starts_at: string | null;
   duration_minutes: number;
   is_free: boolean;
@@ -35,6 +40,15 @@ export function formatPrice(row: Pick<ClassRow, "is_free" | "price_cents">) {
   return `$${(row.price_cents / 100).toFixed(row.price_cents % 100 === 0 ? 0 : 2)}`;
 }
 
+/** "Online" for remote classes, otherwise the zip code. */
+export function formatLocation(row: Pick<ClassRow, "format" | "zip_code">) {
+  return row.format === "online" ? "Online" : `Zip ${row.zip_code ?? ""}`;
+}
+
+export function isGauging(row: Pick<ClassRow, "status">) {
+  return row.status === "gauging_interest";
+}
+
 export function formatWhen(startsAt: string | null) {
   if (!startsAt) return "Date to be announced";
   return new Date(startsAt).toLocaleString(undefined, {
@@ -45,6 +59,7 @@ export function formatWhen(startsAt: string | null) {
     minute: "2-digit",
   });
 }
+
 
 async function attachMeta(classes: ClassRow[]): Promise<ClassWithMeta[]> {
   if (classes.length === 0) return [];
