@@ -1,11 +1,13 @@
-import { useState, type ReactNode } from "react";
+import { useEffect, useRef, useState, type ReactNode } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { useAuth } from "@/hooks/useAuth";
 import { claimInvite, fetchMembership } from "@/lib/community";
+import { PENDING_INVITE_KEY } from "@/routes/join.$code";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+
 
 const messages: Record<string, string> = {
   invalid: "We don't recognize that code.",
@@ -38,6 +40,35 @@ export function MemberGate({ children }: { children: ReactNode }) {
     },
     onError: () => toast.error("Could not use that code."),
   });
+
+  // A pending invite from an invite link is applied automatically after sign-in.
+  const autoTried = useRef(false);
+  useEffect(() => {
+    if (autoTried.current || !user || membership?.status !== "waitlisted") return;
+    let pending: string | null = null;
+    try {
+      pending = sessionStorage.getItem(PENDING_INVITE_KEY);
+    } catch {
+      /* ignore */
+    }
+    if (!pending) return;
+    autoTried.current = true;
+    claimInvite(pending)
+      .then((result) => {
+        try {
+          sessionStorage.removeItem(PENDING_INVITE_KEY);
+        } catch {
+          /* ignore */
+        }
+        if (result === "ok") {
+          toast.success("You're in — welcome to Kindred.");
+          queryClient.invalidateQueries();
+        }
+      })
+      .catch(() => {});
+  }, [user, membership?.status, queryClient]);
+
+
 
   if (isLoading || !membership) {
     return <p className="px-5 pt-10 text-sm text-muted-foreground">Loading…</p>;
