@@ -5,12 +5,7 @@ import { MapPin, Users, Clock, Search, Video } from "lucide-react";
 import { AppShell, PageHeader } from "@/components/AppShell";
 import { AuthGate } from "@/components/AuthGate";
 import { MemberGate } from "@/components/MemberGate";
-import {
-  fetchUpcomingClasses,
-  formatPrice,
-  formatWhen,
-  isGauging,
-} from "@/lib/community";
+import { fetchUpcomingClasses, formatPrice, formatWhen, isGauging } from "@/lib/community";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 

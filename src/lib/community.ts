@@ -60,13 +60,12 @@ export function formatWhen(startsAt: string | null) {
   });
 }
 
-
 async function attachMeta(classes: ClassRow[]): Promise<ClassWithMeta[]> {
   if (classes.length === 0) return [];
   const teacherIds = [...new Set(classes.map((c) => c.teacher_id))];
   const classIds = classes.map((c) => c.id);
 
-const [{ data: profiles }, { data: signupCounts }] = await Promise.all([
+  const [{ data: profiles }, { data: signupCounts }] = await Promise.all([
     supabase.from("profiles").select("*").in("id", teacherIds),
     (supabase.rpc as any)("class_signup_counts", { class_ids: classIds }),
   ]);
@@ -114,8 +113,6 @@ export async function scheduleClass(
   if (error) throw error;
 }
 
-
-
 export async function fetchClass(id: string): Promise<ClassWithMeta | null> {
   const { data, error } = await supabase.from("classes").select("*").eq("id", id).maybeSingle();
   if (error) throw error;
@@ -131,7 +128,11 @@ export async function fetchSkills() {
 }
 
 export async function fetchMyProfile(userId: string): Promise<ProfileRow | null> {
-  const { data, error } = await supabase.from("profiles").select("*").eq("id", userId).maybeSingle();
+  const { data, error } = await supabase
+    .from("profiles")
+    .select("*")
+    .eq("id", userId)
+    .maybeSingle();
   if (error) throw error;
   return (data as ProfileRow) ?? null;
 }

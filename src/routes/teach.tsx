@@ -16,7 +16,6 @@ import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
 import { cn } from "@/lib/utils";
 
-
 export const Route = createFileRoute("/teach")({
   head: () => ({
     meta: [
@@ -110,8 +109,7 @@ function TeachForm() {
           format,
           meeting_url: format === "online" ? parsed.meeting_url : "",
           capacity: parsed.capacity,
-          starts_at:
-            !gauging && parsed.starts_at ? new Date(parsed.starts_at).toISOString() : null,
+          starts_at: !gauging && parsed.starts_at ? new Date(parsed.starts_at).toISOString() : null,
           status: gauging ? "gauging_interest" : "published",
           is_free: isFree,
           price_cents: isFree ? 0 : Math.round(parsed.price * 100),
@@ -140,7 +138,6 @@ function TeachForm() {
       toast.error(message);
     },
   });
-
 
   return (
     <>
@@ -288,7 +285,6 @@ function TeachForm() {
             </div>
           )}
         </div>
-
 
         <div className="rounded-2xl border border-border bg-card p-4">
           <div className="flex items-center justify-between">
