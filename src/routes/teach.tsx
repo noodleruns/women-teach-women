@@ -38,10 +38,8 @@ const schema = z.object({
   title: z.string().trim().min(4, "Give your class a title").max(120),
   skill_name: z.string().trim().min(2, "What skill is this?").max(80),
   description: z.string().trim().max(1500),
-  zip_code: z
-    .string()
-    .trim()
-    .regex(/^\d{5}$/, "Enter a 5-digit zip code"),
+  zip_code: z.string().trim(),
+  meeting_url: z.string().trim().max(500),
   capacity: z.coerce.number().int().min(1).max(200),
   starts_at: z.string().optional(),
   price: z.coerce.number().min(0).max(2000),
@@ -75,11 +73,14 @@ function TeachForm() {
     skill_name: "",
     description: "",
     zip_code: "",
+    meeting_url: "",
     capacity: "8",
     starts_at: "",
     price: "0",
   });
   const [isFree, setIsFree] = useState(true);
+  const [format, setFormat] = useState<"in_person" | "online">("in_person");
+  const [gauging, setGauging] = useState(false);
 
   const set = (key: keyof typeof form) => (value: string) =>
     setForm((prev) => ({ ...prev, [key]: value }));
@@ -88,8 +89,14 @@ function TeachForm() {
     mutationFn: async () => {
       const parsed = schema.parse({
         ...form,
-        zip_code: form.zip_code || profile?.zip_code || "",
+        zip_code: form.zip_code || (format === "in_person" ? (profile?.zip_code ?? "") : ""),
       });
+      if (format === "in_person" && !/^\d{5}$/.test(parsed.zip_code)) {
+        throw new Error("Enter a 5-digit zip code for in-person classes");
+      }
+      if (!gauging && !parsed.starts_at) {
+        throw new Error("Pick a date, or switch on “Gauge interest first”");
+      }
       const { data, error } = await supabase
         .from("classes")
         .insert({
@@ -97,9 +104,13 @@ function TeachForm() {
           title: parsed.title,
           skill_name: parsed.skill_name,
           description: parsed.description,
-          zip_code: parsed.zip_code,
+          zip_code: format === "in_person" ? parsed.zip_code : "",
+          format,
+          meeting_url: format === "online" ? parsed.meeting_url : "",
           capacity: parsed.capacity,
-          starts_at: parsed.starts_at ? new Date(parsed.starts_at).toISOString() : null,
+          starts_at:
+            !gauging && parsed.starts_at ? new Date(parsed.starts_at).toISOString() : null,
+          status: gauging ? "gauging_interest" : "published",
           is_free: isFree,
           price_cents: isFree ? 0 : Math.round(parsed.price * 100),
         })
@@ -110,7 +121,11 @@ function TeachForm() {
     },
     onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ["classes"] });
-      toast.success("Class posted — interested members were notified.");
+      toast.success(
+        gauging
+          ? "Posted — we'll let interested members know so you can pick a date."
+          : "Class posted — interested members were notified.",
+      );
       navigate({ to: "/classes/$classId", params: { classId: data.id } });
     },
     onError: (err) => {
@@ -123,6 +138,7 @@ function TeachForm() {
       toast.error(message);
     },
   });
+
 
   return (
     <>
