@@ -88,11 +88,27 @@ export async function fetchUpcomingClasses(): Promise<ClassWithMeta[]> {
   const { data, error } = await supabase
     .from("classes")
     .select("*")
-    .eq("status", "published")
+    .in("status", ["published", "gauging_interest"])
     .order("starts_at", { ascending: true, nullsFirst: false });
   if (error) throw error;
   return attachMeta((data ?? []) as ClassRow[]);
 }
+
+/** Teacher turns an interest-gathering class into a scheduled one. */
+export async function scheduleClass(
+  classId: string,
+  input: { starts_at: string; meeting_url?: string; zip_code?: string },
+) {
+  const patch: Record<string, unknown> = {
+    status: "published",
+    starts_at: new Date(input.starts_at).toISOString(),
+  };
+  if (input.meeting_url !== undefined) patch.meeting_url = input.meeting_url;
+  if (input.zip_code !== undefined) patch.zip_code = input.zip_code;
+  const { error } = await supabase.from("classes").update(patch).eq("id", classId);
+  if (error) throw error;
+}
+
 
 export async function fetchClass(id: string): Promise<ClassWithMeta | null> {
   const { data, error } = await supabase.from("classes").select("*").eq("id", id).maybeSingle();
