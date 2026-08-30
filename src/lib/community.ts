@@ -1,12 +1,17 @@
 import { supabase } from "@/integrations/supabase/client";
 
+export type ClassFormat = "in_person" | "online";
+export type ClassStatus = "published" | "gauging_interest" | "cancelled";
+
 export type ClassRow = {
   id: string;
   teacher_id: string;
   title: string;
   description: string;
   skill_name: string;
-  zip_code: string;
+  zip_code: string | null;
+  format: ClassFormat;
+  meeting_url: string;
   starts_at: string | null;
   duration_minutes: number;
   is_free: boolean;
@@ -35,6 +40,15 @@ export function formatPrice(row: Pick<ClassRow, "is_free" | "price_cents">) {
   return `$${(row.price_cents / 100).toFixed(row.price_cents % 100 === 0 ? 0 : 2)}`;
 }
 
+/** "Online" for remote classes, otherwise the zip code. */
+export function formatLocation(row: Pick<ClassRow, "format" | "zip_code">) {
+  return row.format === "online" ? "Online" : `Zip ${row.zip_code ?? ""}`;
+}
+
+export function isGauging(row: Pick<ClassRow, "status">) {
+  return row.status === "gauging_interest";
+}
+
 export function formatWhen(startsAt: string | null) {
   if (!startsAt) return "Date to be announced";
   return new Date(startsAt).toLocaleString(undefined, {
@@ -51,7 +65,7 @@ async function attachMeta(classes: ClassRow[]): Promise<ClassWithMeta[]> {
   const teacherIds = [...new Set(classes.map((c) => c.teacher_id))];
   const classIds = classes.map((c) => c.id);
 
-const [{ data: profiles }, { data: signupCounts }] = await Promise.all([
+  const [{ data: profiles }, { data: signupCounts }] = await Promise.all([
     supabase.from("profiles").select("*").in("id", teacherIds),
     (supabase.rpc as any)("class_signup_counts", { class_ids: classIds }),
   ]);
@@ -73,10 +87,30 @@ export async function fetchUpcomingClasses(): Promise<ClassWithMeta[]> {
   const { data, error } = await supabase
     .from("classes")
     .select("*")
-    .eq("status", "published")
+    .in("status", ["published", "gauging_interest"])
     .order("starts_at", { ascending: true, nullsFirst: false });
   if (error) throw error;
   return attachMeta((data ?? []) as ClassRow[]);
+}
+
+/** Teacher turns an interest-gathering class into a scheduled one. */
+export async function scheduleClass(
+  classId: string,
+  input: { starts_at: string; meeting_url?: string; zip_code?: string },
+) {
+  const patch: {
+    status: string;
+    starts_at: string;
+    meeting_url?: string;
+    zip_code?: string;
+  } = {
+    status: "published",
+    starts_at: new Date(input.starts_at).toISOString(),
+  };
+  if (input.meeting_url !== undefined) patch.meeting_url = input.meeting_url;
+  if (input.zip_code !== undefined) patch.zip_code = input.zip_code;
+  const { error } = await supabase.from("classes").update(patch).eq("id", classId);
+  if (error) throw error;
 }
 
 export async function fetchClass(id: string): Promise<ClassWithMeta | null> {
@@ -94,7 +128,11 @@ export async function fetchSkills() {
 }
 
 export async function fetchMyProfile(userId: string): Promise<ProfileRow | null> {
-  const { data, error } = await supabase.from("profiles").select("*").eq("id", userId).maybeSingle();
+  const { data, error } = await supabase
+    .from("profiles")
+    .select("*")
+    .eq("id", userId)
+    .maybeSingle();
   if (error) throw error;
   return (data as ProfileRow) ?? null;
 }

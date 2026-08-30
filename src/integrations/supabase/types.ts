@@ -44,8 +44,10 @@ export type Database = {
           created_at: string
           description: string
           duration_minutes: number
+          format: string
           id: string
           is_free: boolean
+          meeting_url: string
           price_cents: number
           skill_name: string
           starts_at: string | null
@@ -53,15 +55,17 @@ export type Database = {
           teacher_id: string
           title: string
           updated_at: string
-          zip_code: string
+          zip_code: string | null
         }
         Insert: {
           capacity?: number
           created_at?: string
           description?: string
           duration_minutes?: number
+          format?: string
           id?: string
           is_free?: boolean
+          meeting_url?: string
           price_cents?: number
           skill_name: string
           starts_at?: string | null
@@ -69,15 +73,17 @@ export type Database = {
           teacher_id: string
           title: string
           updated_at?: string
-          zip_code: string
+          zip_code?: string | null
         }
         Update: {
           capacity?: number
           created_at?: string
           description?: string
           duration_minutes?: number
+          format?: string
           id?: string
           is_free?: boolean
+          meeting_url?: string
           price_cents?: number
           skill_name?: string
           starts_at?: string | null
@@ -85,7 +91,7 @@ export type Database = {
           teacher_id?: string
           title?: string
           updated_at?: string
-          zip_code?: string
+          zip_code?: string | null
         }
         Relationships: []
       }

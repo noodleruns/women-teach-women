@@ -14,6 +14,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
+import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/teach")({
   head: () => ({
@@ -38,10 +39,8 @@ const schema = z.object({
   title: z.string().trim().min(4, "Give your class a title").max(120),
   skill_name: z.string().trim().min(2, "What skill is this?").max(80),
   description: z.string().trim().max(1500),
-  zip_code: z
-    .string()
-    .trim()
-    .regex(/^\d{5}$/, "Enter a 5-digit zip code"),
+  zip_code: z.string().trim(),
+  meeting_url: z.string().trim().max(500),
   capacity: z.coerce.number().int().min(1).max(200),
   starts_at: z.string().optional(),
   price: z.coerce.number().min(0).max(2000),
@@ -75,11 +74,14 @@ function TeachForm() {
     skill_name: "",
     description: "",
     zip_code: "",
+    meeting_url: "",
     capacity: "8",
     starts_at: "",
     price: "0",
   });
   const [isFree, setIsFree] = useState(true);
+  const [format, setFormat] = useState<"in_person" | "online">("in_person");
+  const [gauging, setGauging] = useState(false);
 
   const set = (key: keyof typeof form) => (value: string) =>
     setForm((prev) => ({ ...prev, [key]: value }));
@@ -88,8 +90,14 @@ function TeachForm() {
     mutationFn: async () => {
       const parsed = schema.parse({
         ...form,
-        zip_code: form.zip_code || profile?.zip_code || "",
+        zip_code: form.zip_code || (format === "in_person" ? (profile?.zip_code ?? "") : ""),
       });
+      if (format === "in_person" && !/^\d{5}$/.test(parsed.zip_code)) {
+        throw new Error("Enter a 5-digit zip code for in-person classes");
+      }
+      if (!gauging && !parsed.starts_at) {
+        throw new Error("Pick a date, or switch on “Gauge interest first”");
+      }
       const { data, error } = await supabase
         .from("classes")
         .insert({
@@ -97,9 +105,12 @@ function TeachForm() {
           title: parsed.title,
           skill_name: parsed.skill_name,
           description: parsed.description,
-          zip_code: parsed.zip_code,
+          zip_code: format === "in_person" ? parsed.zip_code : "",
+          format,
+          meeting_url: format === "online" ? parsed.meeting_url : "",
           capacity: parsed.capacity,
-          starts_at: parsed.starts_at ? new Date(parsed.starts_at).toISOString() : null,
+          starts_at: !gauging && parsed.starts_at ? new Date(parsed.starts_at).toISOString() : null,
+          status: gauging ? "gauging_interest" : "published",
           is_free: isFree,
           price_cents: isFree ? 0 : Math.round(parsed.price * 100),
         })
@@ -110,7 +121,11 @@ function TeachForm() {
     },
     onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ["classes"] });
-      toast.success("Class posted — interested members were notified.");
+      toast.success(
+        gauging
+          ? "Posted — we'll let interested members know so you can pick a date."
+          : "Class posted — interested members were notified.",
+      );
       navigate({ to: "/classes/$classId", params: { classId: data.id } });
     },
     onError: (err) => {
@@ -183,18 +198,58 @@ function TeachForm() {
           />
         </div>
 
-        <div className="grid grid-cols-2 gap-3">
-          <div className="space-y-1.5">
-            <Label htmlFor="zip">Zip code</Label>
-            <Input
-              id="zip"
-              inputMode="numeric"
-              value={form.zip_code}
-              onChange={(e) => set("zip_code")(e.target.value.replace(/\D/g, "").slice(0, 5))}
-              placeholder={profile?.zip_code || "94110"}
-              className="h-12 rounded-xl bg-card"
-            />
+        <div className="space-y-2">
+          <Label>Where does it happen?</Label>
+          <div className="grid grid-cols-2 gap-2">
+            {(
+              [
+                ["in_person", "In person"],
+                ["online", "Online"],
+              ] as const
+            ).map(([value, label]) => (
+              <button
+                key={value}
+                type="button"
+                onClick={() => setFormat(value)}
+                className={cn(
+                  "h-12 rounded-xl border text-sm font-semibold transition-colors",
+                  format === value
+                    ? "border-primary bg-primary text-primary-foreground"
+                    : "border-border bg-card text-foreground",
+                )}
+              >
+                {label}
+              </button>
+            ))}
           </div>
+        </div>
+
+        <div className="grid grid-cols-2 gap-3">
+          {format === "in_person" ? (
+            <div className="space-y-1.5">
+              <Label htmlFor="zip">Zip code</Label>
+              <Input
+                id="zip"
+                inputMode="numeric"
+                value={form.zip_code}
+                onChange={(e) => set("zip_code")(e.target.value.replace(/\D/g, "").slice(0, 5))}
+                placeholder={profile?.zip_code || "94110"}
+                className="h-12 rounded-xl bg-card"
+              />
+            </div>
+          ) : (
+            <div className="space-y-1.5">
+              <Label htmlFor="meeting">Meeting link (optional)</Label>
+              <Input
+                id="meeting"
+                value={form.meeting_url}
+                onChange={(e) => set("meeting_url")(e.target.value)}
+                placeholder="Zoom or Meet link"
+                maxLength={500}
+                className="h-12 rounded-xl bg-card"
+              />
+            </div>
+          )}
           <div className="space-y-1.5">
             <Label htmlFor="capacity">Spots</Label>
             <Input
@@ -207,15 +262,28 @@ function TeachForm() {
           </div>
         </div>
 
-        <div className="space-y-1.5">
-          <Label htmlFor="starts">Date & time (optional)</Label>
-          <Input
-            id="starts"
-            type="datetime-local"
-            value={form.starts_at}
-            onChange={(e) => set("starts_at")(e.target.value)}
-            className="h-12 rounded-xl bg-card"
-          />
+        <div className="rounded-2xl border border-border bg-card p-4">
+          <div className="flex items-center justify-between gap-4">
+            <div>
+              <p className="text-sm font-semibold text-foreground">Gauge interest first</p>
+              <p className="text-xs text-muted-foreground">
+                Post without a date, see who's interested, then pick a time.
+              </p>
+            </div>
+            <Switch checked={gauging} onCheckedChange={setGauging} />
+          </div>
+          {!gauging && (
+            <div className="mt-4 space-y-1.5">
+              <Label htmlFor="starts">Date & time</Label>
+              <Input
+                id="starts"
+                type="datetime-local"
+                value={form.starts_at}
+                onChange={(e) => set("starts_at")(e.target.value)}
+                className="h-12 rounded-xl bg-background"
+              />
+            </div>
+          )}
         </div>
 
         <div className="rounded-2xl border border-border bg-card p-4">

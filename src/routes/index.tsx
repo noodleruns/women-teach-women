@@ -1,11 +1,11 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { useState } from "react";
-import { MapPin, Users, Clock, Search } from "lucide-react";
+import { MapPin, Users, Clock, Search, Video } from "lucide-react";
 import { AppShell, PageHeader } from "@/components/AppShell";
 import { AuthGate } from "@/components/AuthGate";
 import { MemberGate } from "@/components/MemberGate";
-import { fetchUpcomingClasses, formatPrice, formatWhen } from "@/lib/community";
+import { fetchUpcomingClasses, formatPrice, formatWhen, isGauging } from "@/lib/community";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 
@@ -51,7 +51,7 @@ function ClassFeed() {
   const filtered = classes.filter((c) =>
     !term
       ? true
-      : [c.title, c.skill_name, c.zip_code, c.teacher?.display_name ?? ""]
+      : [c.title, c.skill_name, c.zip_code ?? "", c.teacher?.display_name ?? ""]
           .join(" ")
           .toLowerCase()
           .includes(term),
@@ -62,7 +62,7 @@ function ClassFeed() {
       <PageHeader
         eyebrow="Kindred"
         title="Classes near you"
-        subtitle="Small, in-person sessions taught by women in your community."
+        subtitle="Small sessions taught by women in your community — online or nearby."
       />
 
       <div className="px-5">
@@ -100,9 +100,16 @@ function ClassFeed() {
           >
             <div className="flex items-start justify-between gap-3">
               <div>
-                <Badge variant="secondary" className="rounded-full">
-                  {c.skill_name}
-                </Badge>
+                <div className="flex flex-wrap gap-1.5">
+                  <Badge variant="secondary" className="rounded-full">
+                    {c.skill_name}
+                  </Badge>
+                  {isGauging(c) && (
+                    <Badge className="rounded-full bg-accent text-accent-foreground">
+                      Interest list
+                    </Badge>
+                  )}
+                </div>
                 <h2 className="mt-2 text-lg leading-snug text-foreground">{c.title}</h2>
               </div>
               <span className="shrink-0 rounded-full bg-primary/10 px-3 py-1 text-xs font-bold text-primary">
@@ -112,10 +119,19 @@ function ClassFeed() {
             <p className="mt-2 line-clamp-2 text-sm text-muted-foreground">{c.description}</p>
             <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-muted-foreground">
               <span className="inline-flex items-center gap-1">
-                <Clock className="size-3.5" /> {formatWhen(c.starts_at)}
+                <Clock className="size-3.5" />{" "}
+                {isGauging(c) ? "Gathering interest" : formatWhen(c.starts_at)}
               </span>
               <span className="inline-flex items-center gap-1">
-                <MapPin className="size-3.5" /> {c.zip_code}
+                {c.format === "online" ? (
+                  <>
+                    <Video className="size-3.5" /> Online
+                  </>
+                ) : (
+                  <>
+                    <MapPin className="size-3.5" /> {c.zip_code}
+                  </>
+                )}
               </span>
               <span className="inline-flex items-center gap-1">
                 <Users className="size-3.5" /> {c.signupCount}/{c.capacity}
