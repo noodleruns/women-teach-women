@@ -199,18 +199,58 @@ function TeachForm() {
           />
         </div>
 
-        <div className="grid grid-cols-2 gap-3">
-          <div className="space-y-1.5">
-            <Label htmlFor="zip">Zip code</Label>
-            <Input
-              id="zip"
-              inputMode="numeric"
-              value={form.zip_code}
-              onChange={(e) => set("zip_code")(e.target.value.replace(/\D/g, "").slice(0, 5))}
-              placeholder={profile?.zip_code || "94110"}
-              className="h-12 rounded-xl bg-card"
-            />
+        <div className="space-y-2">
+          <Label>Where does it happen?</Label>
+          <div className="grid grid-cols-2 gap-2">
+            {(
+              [
+                ["in_person", "In person"],
+                ["online", "Online"],
+              ] as const
+            ).map(([value, label]) => (
+              <button
+                key={value}
+                type="button"
+                onClick={() => setFormat(value)}
+                className={cn(
+                  "h-12 rounded-xl border text-sm font-semibold transition-colors",
+                  format === value
+                    ? "border-primary bg-primary text-primary-foreground"
+                    : "border-border bg-card text-foreground",
+                )}
+              >
+                {label}
+              </button>
+            ))}
           </div>
+        </div>
+
+        <div className="grid grid-cols-2 gap-3">
+          {format === "in_person" ? (
+            <div className="space-y-1.5">
+              <Label htmlFor="zip">Zip code</Label>
+              <Input
+                id="zip"
+                inputMode="numeric"
+                value={form.zip_code}
+                onChange={(e) => set("zip_code")(e.target.value.replace(/\D/g, "").slice(0, 5))}
+                placeholder={profile?.zip_code || "94110"}
+                className="h-12 rounded-xl bg-card"
+              />
+            </div>
+          ) : (
+            <div className="space-y-1.5">
+              <Label htmlFor="meeting">Meeting link (optional)</Label>
+              <Input
+                id="meeting"
+                value={form.meeting_url}
+                onChange={(e) => set("meeting_url")(e.target.value)}
+                placeholder="Zoom or Meet link"
+                maxLength={500}
+                className="h-12 rounded-xl bg-card"
+              />
+            </div>
+          )}
           <div className="space-y-1.5">
             <Label htmlFor="capacity">Spots</Label>
             <Input
@@ -223,16 +263,30 @@ function TeachForm() {
           </div>
         </div>
 
-        <div className="space-y-1.5">
-          <Label htmlFor="starts">Date & time (optional)</Label>
-          <Input
-            id="starts"
-            type="datetime-local"
-            value={form.starts_at}
-            onChange={(e) => set("starts_at")(e.target.value)}
-            className="h-12 rounded-xl bg-card"
-          />
+        <div className="rounded-2xl border border-border bg-card p-4">
+          <div className="flex items-center justify-between gap-4">
+            <div>
+              <p className="text-sm font-semibold text-foreground">Gauge interest first</p>
+              <p className="text-xs text-muted-foreground">
+                Post without a date, see who's interested, then pick a time.
+              </p>
+            </div>
+            <Switch checked={gauging} onCheckedChange={setGauging} />
+          </div>
+          {!gauging && (
+            <div className="mt-4 space-y-1.5">
+              <Label htmlFor="starts">Date & time</Label>
+              <Input
+                id="starts"
+                type="datetime-local"
+                value={form.starts_at}
+                onChange={(e) => set("starts_at")(e.target.value)}
+                className="h-12 rounded-xl bg-background"
+              />
+            </div>
+          )}
         </div>
+
 
         <div className="rounded-2xl border border-border bg-card p-4">
           <div className="flex items-center justify-between">
