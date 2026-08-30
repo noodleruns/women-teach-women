@@ -1,11 +1,13 @@
-import { useState, type ReactNode } from "react";
+import { useEffect, useRef, useState, type ReactNode } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { useAuth } from "@/hooks/useAuth";
 import { claimInvite, fetchMembership } from "@/lib/community";
+import { PENDING_INVITE_KEY } from "@/routes/join.$code";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+
 
 const messages: Record<string, string> = {
   invalid: "We don't recognize that code.",
