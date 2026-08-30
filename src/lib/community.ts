@@ -99,7 +99,12 @@ export async function scheduleClass(
   classId: string,
   input: { starts_at: string; meeting_url?: string; zip_code?: string },
 ) {
-  const patch: Record<string, unknown> = {
+  const patch: {
+    status: string;
+    starts_at: string;
+    meeting_url?: string;
+    zip_code?: string;
+  } = {
     status: "published",
     starts_at: new Date(input.starts_at).toISOString(),
   };
@@ -108,6 +113,7 @@ export async function scheduleClass(
   const { error } = await supabase.from("classes").update(patch).eq("id", classId);
   if (error) throw error;
 }
+
 
 
 export async function fetchClass(id: string): Promise<ClassWithMeta | null> {
