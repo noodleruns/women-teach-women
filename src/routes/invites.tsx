@@ -150,12 +150,12 @@ function Invites() {
           disabled={create.isPending}
           className="h-12 w-full rounded-full text-base"
         >
-          {create.isPending ? "Creating…" : "Create invite code"}
+          {create.isPending ? "Creating…" : "Create invite link"}
         </Button>
       </form>
 
       <section className="mt-8 px-5">
-        <h2 className="text-lg text-foreground">Unclaimed codes</h2>
+        <h2 className="text-lg text-foreground">Unclaimed links</h2>
         {open.length === 0 ? (
           <p className="mt-2 text-sm text-muted-foreground">No open invites yet.</p>
         ) : (
@@ -163,34 +163,45 @@ function Invites() {
             {open.map((invite) => (
               <li
                 key={invite.id}
-                className="flex items-center justify-between gap-3 rounded-2xl border border-border bg-card p-3"
+                className="space-y-2 rounded-2xl border border-border bg-card p-3"
               >
                 <div>
-                  <p className="font-mono text-base tracking-[0.2em] text-foreground">
-                    {invite.code}
+                  <p className="break-all font-mono text-xs text-foreground">
+                    {inviteLink(invite.code)}
                   </p>
                   {invite.note && (
-                    <p className="text-xs text-muted-foreground">For {invite.note}</p>
+                    <p className="mt-1 text-xs text-muted-foreground">For {invite.note}</p>
                   )}
                 </div>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="rounded-full"
-                  onClick={() => copy(invite.code)}
-                >
-                  {copied === invite.code ? (
-                    <Check className="size-4" />
-                  ) : (
-                    <Copy className="size-4" />
-                  )}
-                  {copied === invite.code ? "Copied" : "Copy"}
-                </Button>
+                <div className="flex gap-2">
+                  <Button
+                    size="sm"
+                    className="flex-1 rounded-full"
+                    onClick={() => share(invite.code)}
+                  >
+                    <Share2 className="size-4" />
+                    Share link
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="rounded-full"
+                    onClick={() => copy(invite.code)}
+                  >
+                    {copied === invite.code ? (
+                      <Check className="size-4" />
+                    ) : (
+                      <Copy className="size-4" />
+                    )}
+                    {copied === invite.code ? "Copied" : "Copy"}
+                  </Button>
+                </div>
               </li>
             ))}
           </ul>
         )}
       </section>
+
 
       {used.length > 0 && (
         <section className="mt-8 px-5">
